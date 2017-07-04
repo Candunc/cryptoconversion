@@ -1,0 +1,17 @@
+body,html {
+	height:100%;
+}
+
+/* select-width-auto by Pawan Pillai, https://stackoverflow.com/a/17482068 */
+.select-width-auto {
+	width:auto !important;
+}
+
+.rate {
+	width: 11em !important;
+}
+
+.table-center {
+	margin: 0px auto;
+	float: none;
+}
