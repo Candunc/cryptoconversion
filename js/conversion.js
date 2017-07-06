@@ -18,11 +18,6 @@ var lockfile = {
 	"row4":false
 }
 
-/*
-TODO: Build a proper currency conversion function that handles errors and flips currency if required.
-
-*/
-
 var conversion = null;
 
 // Inspired by elclanrs, https://stackoverflow.com/a/21843059
