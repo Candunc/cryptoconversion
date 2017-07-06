@@ -6,6 +6,7 @@
 
 	<title>CryptoConversion</title>
 
+	<link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet"> 
 	<link rel="stylesheet" href="css/conversion.css">
 
 	<!-- Bootstrap CSS file -->
@@ -42,9 +43,12 @@
 					</td>
 					<td>
 						<div class="input-group rate">
-							<span class="input-group-addon">#</span>
+							<span class="input-group-addon symbol">#</span>
 							<input type=text class="form-control" id="row1-val" onchange="updateGUI()">
 						</div>
+					</td>
+					<td>
+						<img id="row1-lock">
 					</td>
 				</tr>
 				<tr>
@@ -53,9 +57,12 @@
 					</td>
 					<td>
 						<div class="input-group rate">
-							<span class="input-group-addon">@</span>
+							<span class="input-group-addon symbol">@</span>
 							<input type=text class="form-control" id="row2-val" onchange="updateGUI()">
 						</div>
+					</td>
+					<td>
+						<img id="row2-lock" class="icon" src="img/1f513.svg" onerror="this.src='img-1f513.png'" alt="locked" onclick="updateLock('row2')">
 					</td>
 				</tr>
 				<tr>
@@ -64,21 +71,33 @@
 					</td>
 					<td>
 						<div class="input-group rate">
-							<span class="input-group-addon">@</span>
+							<span class="input-group-addon symbol">@</span>
 							<input type=text class="form-control" id="row3-val" onchange="updateGUI()">
 						</div>
 					</td>
+					<td>
+						<img id="row3-lock" class="icon" src="img/1f513.svg" onerror="this.src='img-1f513.png'" alt="locked" onclick="updateLock('row3')">
+					</td>
 				</tr>
 				<tr>
-					<td>
-						<button type="button" class="btn btn-info" onclick="resetGUI()">Reset</button>
-					</td>
+					<td></td>
 					<td>
 						<div class="input-group rate">
-							<span class="input-group-addon">#</span>
+							<span class="input-group-addon symbol">#</span>
 							<input type=text class="form-control" id="row4-val" onchange="updateGUI()">
 						</div>
 					</td>
+					<td>
+						<img id="row4-lock">
+					</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td>
+						<button type="button" class="btn btn-info" onclick="updateConversion()">Refresh</button>
+						<button type="button" class="btn btn-info" onclick="resetGUI()">Reset</button>
+					</td>
+				</tr>
 			</table>
 		</div>
 	</div>

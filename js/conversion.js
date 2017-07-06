@@ -11,6 +11,18 @@ var row3_data = [
 	"USD"
 ]
 
+var lockfile = {
+	"row1":false,
+	"row2":false,
+	"row3":false,
+	"row4":false
+}
+
+/*
+TODO: Build a proper currency conversion function that handles errors and flips currency if required.
+
+*/
+
 var conversion = null;
 
 // Inspired by elclanrs, https://stackoverflow.com/a/21843059
@@ -24,59 +36,104 @@ function populateSelect(select, data) {
 	select.appendChild(frag.cloneNode(true));
 }
 
-function updateGUI() {
-	// currencies
-	var row1_cur = document.getElementById('row1').value;
-	var row2_cur = document.getElementById('row2').value;
-	var row3_cur = document.getElementById('row3').value;
+function updateLock(lock) {
+	lockfile[lock] = !lockfile[lock];
+	updateGUI();
+}
 
-	// Quick change as Poloniex doesn't have direct USD.
-	if (row3_cur == "USD") {
-		row3_cur = "USDT";
-	}
+function getGUIStatus() {
+	var status = {};
+	var iterate = null;
 
-	// numeric values
-	var row1_val = document.getElementById('row1-val');
-	var row2_val = document.getElementById('row2-val');
-	var row3_val = document.getElementById('row3-val');
-	var row4_val = document.getElementById('row4-val');
-
-	if (row1_cur === row2_cur) {
-		row2_val.value = "1.00000000"
+	// Avoid type errors due to ajax waiting.
+	if (conversion == null) {
+		for (var i = 4; i > 0; i--) {
+			iterate = 'row' + i;
+			status[iterate] = {};
+			status[iterate]['lock_element'] = document.getElementById(iterate+'-lock');
+		}
 	} else {
-		row2_val.value = conversion[row2_cur + "_" + row1_cur]['last'];
+		for (var i = 4; i > 0; i--) {
+			iterate = 'row' + i;
+			status[iterate] = {};
+
+			status[iterate]['currency_element'] = document.querySelectorAll("[data-id='"+iterate+"']")[0];
+			status[iterate]['value_element'] = document.getElementById(iterate+'-val');
+			status[iterate]['lock_element'] = document.getElementById(iterate+'-lock');
+			status[iterate]['currency'] = status[iterate]['currency_element'];
+			status[iterate]['value'] = status[iterate]['value_element'].value;
+		}
 	}
 
-	row3_val.value = conversion[row3_cur + "_" + row2_cur]['last'];
-	row4_val.value = row1_val.value * row2_val.value * row3_val.value;
+	return status;
+}
+
+function updateGUI() {
+	var status = getGUIStatus();
+
+	// I originally had locks on each row, however it's only required to have locks on rows 2 and 3.
+	var iterate = null;
+	for (var i = 3; i > 1; i--) {
+		iterate = "row" + i;
+		if (lockfile[iterate]) {
+			status[iterate]['lock_element'].src = 'img/1f512.svg';
+			status[iterate]['lock_element'].onerr = "this.src='img-1f512.png'";
+			status[iterate]['lock_element'].alt = 'locked';
+		} else {
+			status[iterate]['lock_element'].src = 'img/1f513.svg';
+			status[iterate]['lock_element'].onerr = "this.src='img-1f513.png'";
+			status[iterate]['lock_element'].alt = 'unlocked';
+		}
+	}
+
+	// Avoid type errors due to ajax waiting.
+	if (conversion == null)
+		return false;
+
+	// Quick change as Poloniex doesn't have direct USD
+	if (status['row3']['currency'] == 'USD') {
+		status['row3']['currency'] = 'USDT';
+	}
+
+	if (!lockfile['row2']) {
+		if (status['row1']['currency'] === status['row2']['currency']) {
+			status['row2']['value_element'].value = '1.00000000'
+		} else {
+			//see todo
+			status['row2']['value_element'].value = conversion[status['row2']['currency'] + "_" + status['row1']['currency']]['last'];
+		}
+	}
+
+	if (!lockfile['row3'])
+		status['row3']['value_element'] = conversion[status['row3']['currency'] + '_' + status['row2']['currency']]['last'];
+	
+	status['row4']['value_element'] = status['row1']['value'] * status['row2']['value'] * status['row3']['value'];
 }
 
 function resetGUI() {
+	var status = getGUIStatus();
+
+	for (var i = 4; i > 0; i--) {
+		lockfile['row'+i] = false;
+	}
+
 	updateConversion();
-	var row1_val = document.getElementById('row1-val');
-	var row2_val = document.getElementById('row2-val');
-	var row3_val = document.getElementById('row3-val');
-	var row4_val = document.getElementById('row4-val');
-
-	row1_val.value = "0.00000000";
-	row4_val.value = "0.00";
-
 }
 
 function updateConversion() {
-	var lastUpdate = localStorage.getItem("exchange_lastUpdate");
-	var currentTime = + new Date(); // Credit to daveb, https://stackoverflow.com/a/221297
-	if (conversion == null || !lastUpdate || (currentTime - lastUpdate) > 60) {
-		$.getJSON('https://poloniex.com/public?command=returnTicker', function(data) {
-			conversion = data;
-			localStorage.setItem("exchange_lastUpdate",currentTime);
-			updateGUI();
-		});
-	}
+	$.getJSON('https://poloniex.com/public?command=returnTicker', function(data) {
+		conversion = data;
+		updateGUI();
+	});
 }
 
 // Populate columns on page load
 populateSelect(document.getElementById('row1'),row1_data);
 populateSelect(document.getElementById('row2'),row2_data);
 populateSelect(document.getElementById('row3'),row3_data);
-resetGUI();
+
+/*
+window.setInterval(function(){
+	updateConversion();
+}, 15000);
+*/
